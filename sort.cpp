@@ -186,7 +186,7 @@ public:
     }
 
 
-    // 快速排序法的划分函数，对数组或集合 nums 进行划分，并返回枢轴所在位置
+    // --- 快速排序法的划分函数，对数组或集合 nums 进行划分，并返回枢轴所在位置
     int partition(vector<int> &nums, int low, int high){
         int len = nums.size();
         int pivot;      // 枢轴的值
@@ -217,7 +217,7 @@ public:
         return low;                   // 返回枢轴所在位置
     }
 
-    // 快速排序法，对数组或容器 nums 中 [low, high] 之间的记录进行快速排序
+    // -- 快速排序法，对数组或容器 nums 中 [low, high] 之间的记录进行快速排序
     void qSort(vector<int> &nums, int low, int high){
         int pivotkey;   // 枢轴的位置
         if(low < high){
@@ -228,7 +228,7 @@ public:
 
     }
 
-     // -快速排序法的容器函数，对容器或数组nums进行排序
+     // - 快速排序法的容器函数，对容器或数组nums进行排序
     void quickSort(vector<int> &nums){
         int len = nums.size();
         qSort(nums, 0, len);
@@ -315,14 +315,104 @@ public:
 };
 
 
+
+/* ----------------------------- 4. 归并排序类 --------------------  */
+class MergingSort{
+public:
+    int compareCount ;    // 比较次数
+    int moveCount;        // 移动次数
+
+    // 初始化比较次数和移动次数，调用各个排序函数前调用
+    void initCount(){
+        compareCount = 0;
+        moveCount    = 0;
+    }
+
+    // 2路归并排序法，对容器或数组nums进行排序，递归法
+    void mergeSort(vector<int> &nums){
+        int len = nums.size();
+        mSort(nums, 0, len);   // 将无序的nums[0 ~ len] 归并排序为有序
+        printf("选择排序——简单选择排序法递归实现，数组长度：%d ，比较次数：%d，移动次数: %d。\n", len, compareCount, moveCount);
+    }
+
+    // 2路归并排序法，将nums[low ~ high] 归并排序为 temp[low ~ high]
+    void mSort(vector<int> &nums, int low, int high){
+        if(low < high){                     // 有不只一个元素待归并
+            int m = (low + high) / 2;
+            mSort(nums, low, m);            // 递归将nums[low ~ m]归并为有序的 nums[low ~ m]
+            mSort(nums, m + 1, high);       // 递归将nums[m+1 ~ high]归并为有序的 nums[m+1 ~ high]
+            Merge(nums, low, m, high);      // 将 nums[low ~ m] 和 nums[m+1 ~ high] 归并到 nums[low ~ high]
+        }
+    }
+
+    // 2路归并排序法的合并函数，将有序的nums[low ~ m]与nums[m+1 ~ high] 合并为有序的nums[low ~ high]
+    void Merge(vector<int> &nums, int low, int m, int high){
+        int len = nums.size();
+        vector<int> temp;             // 临时容器，用于暂存排好序的记录
+        temp.resize(len);             // 设置临时容器大小
+        int i = low;                  // nums[low ~ m] 范围内的下标
+        int j = m + 1;                // nums[m+1 ~ high] 范围内的下标
+        int k = low;                  // temp[low ~ high]的下标
+        while(i <= m && j <= high){
+            if(nums[i] < nums[j]){
+                temp[k] = nums[i++];
+            }else{
+                temp[k] = nums[j++];
+            }
+            k++;
+        }
+
+        while(i <= m){                 // 若temp[low ~ m] 还剩下数据，直接放到temp之后
+            temp[k++] = nums[i++];
+        }
+
+        while(j <= high){              // 若temp[m+1 ~ high] 还剩下数据，直接放到temp之后
+            temp[k++] = nums[j++];
+        }
+
+        for(i = low; i <= high; i++){  // 将归并好的记录放回nums
+            nums[i] = temp[i];
+        }
+    }
+
+
+    // 2路归并排序法，对容器或数组nums进行排序，迭代法
+    void mergeSort2(vector<int> &nums){
+        int len = nums.size();
+        int currLen = 1;  // 归并长度从1开始
+        while( currLen < len){
+            mSort2(nums, currLen, len);
+            currLen *= 2;
+        }  // 将无序的nums[0 ~ len] 归并排序为有序
+        printf("选择排序——简单选择排序法迭代实现，数组长度：%d ，比较次数：%d，移动次数: %d。\n", len, compareCount, moveCount);
+    }
+
+    // 2路归并排序法，依次将nums中长度为currLen的子序列进行合并排序
+    void mSort2(vector<int> &nums, int subseqLen, int numsLen){
+        int currLow = 0;
+        int currHigh = currLow + 2 * subseqLen - 1;
+        for(int i = 0; currHigh < numsLen; i++){
+            int m = (currLow + currHigh) / 2;
+            Merge(nums, currLow, m, currHigh);
+            currLow  = currLow + 2 * subseqLen;
+            currHigh = currLow + 2 * subseqLen - 1;
+        }
+
+    }
+
+};
+
 int main(){
     vector<int> nums = {5, 2, 1, 3, 4, 6, 4, 7, 8, 9};
     InsertionSort iSort;
     ExchangeSort  eSort;
     SelectionSort sSort;
+    MergingSort   mSort;
+
     iSort.initCount();
     eSort.initCount();
     sSort.initCount();
+    mSort.initCount();
     //iSort.sInsertion(nums);
     //iSort.bInsertSort(nums);
     //iSort.p2_InsertSort(nums);
@@ -332,7 +422,9 @@ int main(){
 //    eSort.quickSort(nums);
 
 //    sSort.sSelectionSort(nums);
-    sSort.heapSort(nums);
+//    sSort.heapSort(nums);
+
+    mSort.mergeSort(nums);
     for(int i = 0; i < nums.size(); i++){
         cout << nums[i] << " ";
     }
